@@ -1,0 +1,35 @@
+{
+  "name": "@fpsf/cpd",
+  "version": "0.2.0",
+  "description": "Reference implementation of FPSF-CPD-001 — Canonical Payment Definition. One payment interface, any payment rail.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "dev": "tsx src/http/server.ts",
+    "start": "node dist/http/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "example:create": "tsx examples/create-payment.ts",
+    "example:encode": "tsx examples/encode-payment.ts",
+    "example:decode": "tsx examples/decode-payment.ts"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.14.0",
+    "@types/supertest": "^6.0.2",
+    "supertest": "^7.0.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0",
+    "vitest": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Build with fpsf-pay: — TypeScript &amp; Flutter client integration guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0B1F33; --navy-2:#132A44; --teal:#1FA3A3; --teal-d:#178585;
+    --teal-light:#E4F5F3; --bg:#FAF9F6; --card:#FFFFFF; --line:rgba(11,31,51,0.10);
+    --text2:#5A6B7A; --amber-bg:#FFF7E8; --amber-d:#8a5a2b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{font-family:'IBM Plex Sans',sans-serif;background:var(--bg);color:var(--navy);line-height:1.6;}
+  a{color:inherit;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 1.5rem;}
+  code, .mono{font-family:'IBM Plex Mono',monospace;}
+  code{background:rgba(11,31,51,0.06);padding:.1rem .35rem;border-radius:4px;font-size:.92em;}
+
+  nav{position:sticky;top:0;background:rgba(250,249,246,0.92);backdrop-filter:blur(6px);
+      border-bottom:1px solid var(--line);z-index:50;}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px;}
+  .brand{font-weight:700;font-size:15px;letter-spacing:.01em;display:flex;align-items:center;gap:8px;}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--teal);}
+  .navlinks{display:flex;gap:1.6rem;font-size:13.5px;font-weight:500;color:var(--text2);}
+  .navlinks a:hover{color:var(--navy);}
+  .navcta{background:var(--navy);color:#fff;padding:.5rem 1rem;border-radius:6px;font-size:13px;font-weight:600;}
+  @media (max-width:820px){.navlinks{display:none;}}
+
+  .hero{padding:4rem 0 3rem;}
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;
+          color:var(--teal-d);margin-bottom:1rem;}
+  h1{font-family:'IBM Plex Serif',serif;font-weight:600;font-size:clamp(30px,4.6vw,48px);line-height:1.1;max-width:760px;}
+  h1 em{color:var(--teal-d);font-style:normal;}
+  .hero p.lead{margin-top:1.1rem;font-size:16.5px;color:var(--text2);max-width:640px;}
+  .hero-actions{display:flex;gap:.9rem;margin-top:1.8rem;flex-wrap:wrap;}
+  .btn{padding:.75rem 1.3rem;border-radius:7px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:inline-block;}
+  .btn-primary{background:var(--navy);color:#fff;}
+  .btn-primary:hover{background:var(--navy-2);}
+  .btn-outline{background:transparent;color:var(--navy);border:1px solid var(--line);}
+  .btn-outline:hover{background:#fff;border-color:var(--navy);}
+
+  section{padding:3rem 0;border-top:1px solid var(--line);}
+  .sec-label{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-d);margin-bottom:.6rem;}
+  h2{font-family:'IBM Plex Serif',serif;font-weight:600;font-size:clamp(22px,2.8vw,29px);}
+  h3{font-size:17px;font-weight:600;margin:1.6rem 0 .5rem;}
+  h3:first-of-type{margin-top:0;}
+  .sec-sub{color:var(--text2);max-width:660px;margin-top:.6rem;font-size:14.5px;}
+  p.body{font-size:14.5px;color:var(--navy);max-width:720px;margin:.6rem 0;}
+  p.body.muted{color:var(--text2);}
+
+  .why-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.1rem;margin-top:1.6rem;}
+  @media (max-width:760px){.why-grid{grid-template-columns:1fr;}}
+  .why-card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:1.2rem 1.3rem;}
+  .why-card h4{font-size:14.5px;margin-bottom:.4rem;}
+  .why-card p{font-size:13.3px;color:var(--text2);}
+
+  .arch{margin-top:1.6rem;background:var(--navy);border-radius:12px;padding:1.6rem 1.8rem;color:#DCE9F2;}
+  .arch pre{background:transparent;color:#CFE8E6;font-family:'IBM Plex Mono',monospace;font-size:12.5px;
+            line-height:1.65;overflow-x:auto;white-space:pre;}
+
+  .callout{margin-top:1.2rem;border-radius:10px;padding:1rem 1.2rem;font-size:13.5px;}
+  .callout.warn{background:var(--amber-bg);border:1px solid rgba(138,90,43,0.2);color:var(--amber-d);}
+  .callout.info{background:var(--teal-light);border:1px solid rgba(31,163,163,0.2);color:var(--navy-2);}
+  .callout b{display:block;margin-bottom:.2rem;}
+
+  .fw-tabs{display:flex;gap:0;margin:1.8rem 0 0;border-bottom:2px solid var(--line);}
+  .fw-tab{padding:.7rem 1.3rem;font-size:14.5px;font-weight:700;color:var(--text2);cursor:pointer;
+          border-bottom:3px solid transparent;margin-bottom:-2px;}
+  .fw-tab.active{color:var(--navy);border-bottom-color:var(--teal);}
+  .fw-panel{display:none;margin-top:2rem;}
+  .fw-panel.active{display:block;}
+
+  .path-tabs{display:flex;gap:.5rem;margin:1.4rem 0 1rem;flex-wrap:wrap;}
+  .path-tab{padding:.4rem .9rem;font-size:12.5px;font-weight:600;color:var(--text2);cursor:pointer;
+             border:1px solid var(--line);border-radius:20px;background:var(--card);}
+  .path-tab.active{color:#fff;background:var(--navy);border-color:var(--navy);}
+  .path-panel{display:none;}
+  .path-panel.active{display:block;}
+
+  pre{background:var(--navy);color:#CFE8E6;border-radius:8px;padding:1rem 1.1rem;font-size:12px;
+      overflow-x:auto;font-family:'IBM Plex Mono',monospace;line-height:1.55;margin-top:.6rem;}
+  pre .c1{color:#7FD8C8;}
+  pre .c2{color:#F3C98B;}
+  pre .c3{color:#8FB0C4;}
+
+  .form-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:'IBM Plex Mono',monospace;
+              font-size:11px;font-weight:600;padding:.25rem .6rem;border-radius:5px;
+              background:var(--teal-light);color:var(--teal-d);margin-bottom:.6rem;}
+  .form-badge.f2{background:#EEE7F7;color:#5A3EA6;}
+  .form-badge.f3{background:#FFF0E5;color:#B15B22;}
+
+  .checklist{margin-top:1.6rem;display:flex;flex-direction:column;gap:.6rem;}
+  .check-item{display:flex;gap:.7rem;align-items:flex-start;background:var(--card);border:1px solid var(--line);
+              border-radius:8px;padding:.8rem .95rem;font-size:13.3px;}
+  .check-item .box{width:16px;height:16px;border:2px solid var(--teal);border-radius:4px;flex-shrink:0;margin-top:.15rem;}
+
+  table.cmp{width:100%;border-collapse:collapse;margin-top:1.4rem;font-size:13px;}
+  table.cmp th, table.cmp td{text-align:left;padding:.55rem .7rem;border-bottom:1px solid var(--line);}
+  table.cmp th{font-size:11px;text-transform:uppercase;letter-spacing:.04em;color:var(--text2);font-weight:600;}
+
+  .cta{background:var(--navy);border-radius:14px;padding:2.6rem 2.2rem;margin:0;text-align:center;color:#fff;}
+  .cta h2{color:#fff;}
+  .cta p{color:#B8C6D4;max-width:520px;margin:.7rem auto 1.5rem;font-size:14px;}
+  .cta .btn-primary{background:var(--teal);}
+  .cta .btn-primary:hover{background:var(--teal-d);}
+  .cta .btn-outline{border-color:rgba(255,255,255,0.3);color:#fff;}
+  .cta .btn-outline:hover{background:rgba(255,255,255,0.08);}
+
+  footer{padding:2.2rem 0 3rem;font-size:12.5px;color:var(--text2);}
+  footer .foot-grid{display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <div class="brand"><span class="dot"></span>Build with fpsf-pay:</div>
+    <div class="navlinks">
+      <a href="#why-hosted">Why a hosted codec</a>
+      <a href="#architecture">Architecture</a>
+      <a href="#code">Client code</a>
+      <a href="#checklist">Checklist</a>
+    </div>
+    <a href="#code" class="navcta">Jump to code</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">FPSF-CPD-003 · Client Integration Guide</div>
+    <h1>Parse and construct <em>fpsf-pay:</em> links from a real app, in either language.</h1>
+    <p class="lead">Working TypeScript (React) and Flutter (Dart) code for all three CPD-003 representation forms — opaque envelope, stringified envelope, and ephemeral token — using the reference codec service you can run yourself, plus the copy-pasteable local code for when your app needs to work offline.</p>
+    <div class="hero-actions">
+      <a href="#code" class="btn btn-primary">See the code →</a>
+      <a href="./index.html" class="btn btn-outline">CPD-001 overview →</a>
+    </div>
+  </div>
+</header>
+
+<section id="why-hosted">
+  <div class="wrap">
+    <div class="sec-label">Two valid paths, shown side by side</div>
+    <h2>Call the codec, or carry it with you — both are correct.</h2>
+    <p class="sec-sub">Every code sample below is shown two ways: calling a hosted (or self-hosted) codec service over HTTP, and doing the equivalent work locally — via the installed <code>@fpsf/cpd</code> package for TypeScript, or a small, copy-pasteable parser for Flutter, where no package exists yet. Neither path is "the right one." They trade off differently, and real apps often use both.</p>
+
+    <div class="why-grid">
+      <div class="why-card">
+        <h4>Why call the hosted codec</h4>
+        <p>One implementation, one place to fix a bug or track a spec revision. No risk of your own parser silently drifting from CPD-003 — the closed-parameter rejection rules and the strict percent-decoding behavior (§7.3 — never treat <code>+</code> as space) are easy to get subtly wrong by hand, and your platform's default query-string parser (JavaScript's <code>URLSearchParams</code>, Dart's <code>Uri.splitQueryString</code>) gets exactly this wrong by default.</p>
+      </div>
+      <div class="why-card">
+        <h4>Why carry it locally</h4>
+        <p>Offline-capable apps, air-gapped environments, or just avoiding a network round trip before you can even show a "scanning…" state. The TypeScript reference implementation is a real, installable package. The Flutter code below is a small, self-contained, spec-conformant parser you can paste directly into your codebase — not a placeholder.</p>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <b>"External" is relative to the client, not to you.</b>
+      The codec service in every example below is the exact reference implementation from FPSF-CPD-001 — you can run it yourself (<code>npm install &amp;&amp; npm run dev</code> from the <code>@fpsf/cpd</code> package), deploy it inside your own infrastructure, and point your client app at that. "External" just means it's a separate process from your mobile or web client, not that it has to be someone else's server.
+    </div>
+  </div>
+</section>
+
+<section id="architecture">
+  <div class="wrap">
+    <div class="sec-label">Architecture</div>
+    <h2>Where the codec sits relative to your client and your backend.</h2>
+    <div class="arch">
+      <pre>Client (React web app, or Flutter mobile app)
+      │
+      │  scans a QR code / opens a deep link → gets a raw "fpsf-pay:…" string
+      ▼
+Codec Service            (this repo's reference implementation — yours to host)
+  POST /v1/payments/uri/parse    → identify the form, without committing to a full decode
+  POST /v1/payments/uri/decode   → Forms 1–2: a canonical Payment. Form 3: an unresolved token.
+  POST /v1/payments/encode       → construct Form 1 + Form 2 URIs from a Payment
+  POST /v1/payments/uri/token    → wrap an already-minted token + signature as a Form 3 URI
+      │
+      │  Form 3 only: the codec never resolves a token — that's your call
+      ▼
+Your Resolution Endpoint       (your own backend — CPD-003 §12.4, out of scope for this spec)
+  exchanges { value, sig } for the actual payload, e.g. another fpsf-pay: URI
+  or a raw Payment/CPR JSON body — which then goes back through the codec above</pre>
+    </div>
+    <p class="body muted">The codec never mints or verifies a Form 3 signature, and never resolves a token into a payload — those are deliberately your application's concern (CPD-003 §12.4). Everything else — parsing, closed-vocabulary validation, and Forms 1–2 decoding — is exactly what the codec exists to take off your plate.</p>
+  </div>
+</section>
+
+<section id="code">
+  <div class="wrap">
+    <div class="sec-label">Client code</div>
+    <h2>TypeScript (React) and Flutter, side by side.</h2>
+    <p class="sec-sub">Both frameworks cover the same four jobs: receiving and parsing a link, resolving a Form 3 reference, constructing a link (typically the payee side of a checkout or invoicing flow), and — Form 3 only — why minting a signed token stays on your backend, never in the client.</p>
+
+    <div class="fw-tabs">
+      <div class="fw-tab active" data-fw="ts">TypeScript · React</div>
+      <div class="fw-tab" data-fw="flutter">Flutter · Dart</div>
+    </div>
+
+    <!-- ============================= TYPESCRIPT / REACT ============================= -->
+    <div class="fw-panel active" id="fw-ts">
+
+      <h3>1. Receiving and parsing a link — Forms 1 &amp; 2</h3>
+      <p class="body muted">A React app rarely needs to know in advance which form it received — <code>/v1/payments/uri/decode</code> (hosted) and <code>decodeURI</code> (installed) both resolve Forms 1–2 transparently and only special-case Form 3.</p>
+
+      <div class="path-tabs">
+        <div class="path-tab active" data-path="ts-decode-hosted">Hosted codec</div>
+        <div class="path-tab" data-path="ts-decode-lib">Installed @fpsf/cpd</div>
+      </div>
+
+      <div class="path-panel active" id="ts-decode-hosted">
+        <pre><span class="c3">// usePaymentFromUri.ts — a React hook wrapping the hosted codec</span>
+<span class="c2">import</span> { useEffect, useState } <span class="c2">from</span> <span class="c1">"react"</span>;
+
+<span class="c2">type</span> DecodedLink =
+  | { status: <span class="c1">"loading"</span> }
+  | { status: <span class="c1">"error"</span>; message: string }
+  | { status: <span class="c1">"payment"</span>; payment: Record&lt;string, unknown&gt; }
+  | { status: <span class="c1">"token"</span>; value: string; signatureAlg: string; signature: string };
+
+<span class="c2">export function</span> usePaymentFromUri(uri: string, codecBaseUrl: string): DecodedLink {
+  <span class="c2">const</span> [result, setResult] = useState&lt;DecodedLink&gt;({ status: <span class="c1">"loading"</span> });
+
+  useEffect(() =&gt; {
+    <span class="c2">let</span> cancelled = <span class="c2">false</span>;
+    setResult({ status: <span class="c1">"loading"</span> });
+
+    fetch(<span class="c1">`${codecBaseUrl}/v1/payments/uri/decode`</span>, {
+      method: <span class="c1">"POST"</span>,
+      headers: { <span class="c1">"Content-Type"</span>: <span class="c1">"application/json"</span> },
+      body: JSON.stringify({ uri }),
+    })
+      .then(<span class="c2">async</span> (res) =&gt; {
+        <span class="c2">const</span> body = <span class="c2">await</span> res.json();
+        <span class="c2">if</span> (!res.ok) <span class="c2">throw new</span> Error(body.error?.message ?? <span class="c1">"decode failed"</span>);
+        <span class="c2">if</span> (cancelled) <span class="c2">return</span>;
+        <span class="c2">if</span> (body.form === <span class="c1">"token"</span>) {
+          setResult({ status: <span class="c1">"token"</span>, value: body.value, signatureAlg: body.signatureAlg, signature: body.signature });
+        } <span class="c2">else</span> {
+          setResult({ status: <span class="c1">"payment"</span>, payment: body.payment });
+        }
+      })
+      .catch((err) =&gt; { <span class="c2">if</span> (!cancelled) setResult({ status: <span class="c1">"error"</span>, message: String(err) }); });
+
+    <span class="c2">return</span> () =&gt; { cancelled = <span class="c2">true</span>; };
+  }, [uri, codecBaseUrl]);
+
+  <span class="c2">return</span> result;
+}</pre>
+        <pre><span class="c3">// PaymentLinkPreview.tsx — display-and-confirm, per CPD-003 §12.1</span>
+<span class="c2">export function</span> PaymentLinkPreview({ uri, codecBaseUrl }: { uri: string; codecBaseUrl: string }) {
+  <span class="c2">const</span> result = usePaymentFromUri(uri, codecBaseUrl);
+
+  <span class="c2">if</span> (result.status === <span class="c1">"loading"</span>) <span class="c2">return</span> &lt;p&gt;Reading payment link…&lt;/p&gt;;
+  <span class="c2">if</span> (result.status === <span class="c1">"error"</span>) <span class="c2">return</span> &lt;p role=<span class="c1">"alert"</span>&gt;Couldn't read this link: {result.message}&lt;/p&gt;;
+  <span class="c2">if</span> (result.status === <span class="c1">"token"</span>) <span class="c2">return</span> &lt;ResolveTokenLink {...result} /&gt;; <span class="c3">// see step 2</span>
+
+  <span class="c2">const</span> p = result.payment <span class="c2">as any</span>;
+  <span class="c2">return</span> (
+    &lt;div&gt;
+      &lt;p&gt;Pay &lt;strong&gt;{p.value.amount} {p.value.asset}&lt;/strong&gt; to &lt;strong&gt;{p.payee.id}&lt;/strong&gt;&lt;/p&gt;
+      {p.intent?.reference &amp;&amp; &lt;p&gt;Reference: {p.intent.reference}&lt;/p&gt;}
+      <span class="c3">{/* never act automatically — require an explicit tap before authorizing */}</span>
+      &lt;button onClick={() =&gt; onConfirm(p)}&gt;Confirm and continue&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</pre>
+      </div>
+
+      <div class="path-panel" id="ts-decode-lib">
+        <pre><span class="c3">// npm install @fpsf/cpd</span>
+<span class="c2">import</span> { decodeURI, UnresolvedTokenUriError } <span class="c2">from</span> <span class="c1">"@fpsf/cpd"</span>;
+
+<span class="c2">function</span> readPaymentLink(uri: string) {
+  <span class="c2">try</span> {
+    <span class="c2">const</span> payment = decodeURI(uri); <span class="c3">// resolves Forms 1 &amp; 2 directly</span>
+    <span class="c2">return</span> { status: <span class="c1">"payment"</span> <span class="c2">as const</span>, payment };
+  } <span class="c2">catch</span> (err) {
+    <span class="c2">if</span> (err <span class="c2">instanceof</span> UnresolvedTokenUriError) {
+      <span class="c3">// Form 3 — no embedded payload; resolve out of band, see step 2</span>
+      <span class="c2">return</span> { status: <span class="c1">"token"</span> <span class="c2">as const</span>, value: err.value, signatureAlg: err.signatureAlg, signature: err.signature };
+    }
+    <span class="c2">throw</span> err; <span class="c3">// malformed URI — CpdUriError</span>
+  }
+}</pre>
+        <p class="body muted">No network round trip before you know which form you have, and no dependency on a running codec service — at the cost of one more package in your bundle, and being responsible for updating it when CPD-003 changes.</p>
+      </div>
+
+      <h3>2. Resolving a Form 3 reference</h3>
+      <span class="form-badge f3">Form 3 — Ephemeral Token + Signature</span>
+      <p class="body muted">Both parsing paths above hand you back <code>{ value, signatureAlg, signature }</code> for a Form 3 URI — identically, since resolution itself is not part of CPD-003 (§12.4). What you do next is entirely your application's own resolution endpoint.</p>
+      <pre><span class="c3">// ResolveTokenLink.tsx — your resolution endpoint, not the codec's</span>
+<span class="c2">async function</span> resolveToken(value: string, signatureAlg: string, signature: string) {
+  <span class="c3">// Your own backend — e.g. reusing the Stablecoin Stack's Ephemeral Token
+  // pattern (FPSF-SS-001 §5.2, §8.3), or any resolution mechanism you define
+  // (CPD-003 §12.4 deliberately leaves this open).</span>
+  <span class="c2">const</span> res = <span class="c2">await</span> fetch(<span class="c1">`https://your-app.example/api/resolve-payment-link?token=${value}`</span>);
+  <span class="c2">if</span> (!res.ok) <span class="c2">throw new</span> Error(<span class="c1">"could not resolve payment link"</span>);
+  <span class="c2">const</span> { uri: resolvedUri } = <span class="c2">await</span> res.json(); <span class="c3">// e.g. another fpsf-pay:cpd-json-v1.… URI</span>
+  <span class="c2">return</span> resolvedUri;
+}
+
+<span class="c2">function</span> ResolveTokenLink({ value, signatureAlg, signature }: { value: string; signatureAlg: string; signature: string }) {
+  <span class="c3">// Feed the resolved URI straight back into usePaymentFromUri / decodeURI —
+  // it will always be a Form 1 or Form 2 URI, never another Form 3 reference.</span>
+  <span class="c2">const</span> [resolvedUri, setResolvedUri] = useState&lt;string | null&gt;(<span class="c2">null</span>);
+  useEffect(() =&gt; { resolveToken(value, signatureAlg, signature).then(setResolvedUri); }, [value]);
+  <span class="c2">if</span> (!resolvedUri) <span class="c2">return</span> &lt;p&gt;Resolving payment reference…&lt;/p&gt;;
+  <span class="c2">return</span> &lt;PaymentLinkPreview uri={resolvedUri} codecBaseUrl={CODEC_BASE_URL} /&gt;;
+}</pre>
+      <div class="callout warn">
+        <b>The signature authenticates the reference, not the payment.</b>
+        Per CPD-003 §12.2, <code>signature</code> only proves the token wasn't tampered with in transit — it says nothing about whether <code>resolveToken</code>'s endpoint is trustworthy or whether the resolved payload has changed since the token was minted. TLS to a resolution endpoint you control is what actually protects this step.
+      </div>
+
+      <h3>3. Constructing a link — payee-side, Forms 1 &amp; 2</h3>
+      <p class="body muted">A checkout or invoicing React app (e.g. an admin dashboard, not the payer's device) building a payment request for display as a link or QR code.</p>
+
+      <div class="path-tabs">
+        <div class="path-tab active" data-path="ts-encode-hosted">Hosted codec</div>
+        <div class="path-tab" data-path="ts-encode-lib">Installed @fpsf/cpd</div>
+      </div>
+      <div class="path-panel active" id="ts-encode-hosted">
+        <pre><span class="c2">async function</span> buildPaymentLink(payment: Record&lt;string, unknown&gt;, codecBaseUrl: string) {
+  <span class="c2">const</span> res = <span class="c2">await</span> fetch(<span class="c1">`${codecBaseUrl}/v1/payments/encode`</span>, {
+    method: <span class="c1">"POST"</span>,
+    headers: { <span class="c1">"Content-Type"</span>: <span class="c1">"application/json"</span> },
+    body: JSON.stringify(payment),
+  });
+  <span class="c2">const</span> { uri, stringifiedUri } = <span class="c2">await</span> res.json();
+  <span class="c2">return</span> uri; <span class="c3">// prefer Form 1 (uri) for a QR code; stringifiedUri exists mostly for logs/debugging</span>
+}</pre>
+      </div>
+      <div class="path-panel" id="ts-encode-lib">
+        <pre><span class="c2">import</span> { Payment, encodeEnvelopeURI } <span class="c2">from</span> <span class="c1">"@fpsf/cpd"</span>;
+
+<span class="c2">const</span> payment = Payment.create({ <span class="c3">/* ... */</span> });
+<span class="c2">const</span> uri = encodeEnvelopeURI(payment); <span class="c3">// Form 1 — preferred</span></pre>
+      </div>
+
+      <h3>4. Minting a Form 3 token — backend only, not client code</h3>
+      <span class="form-badge f3">Form 3 — Ephemeral Token + Signature</span>
+      <div class="callout warn">
+        <b>Never in the client.</b>
+        Producing <code>sig</code> requires access to your issuing system's private signing key. That key MUST NOT ship inside a React web bundle or a mobile app. The snippet below runs on your backend — the codec's <code>/v1/payments/uri/token</code> endpoint only performs the final wire-format wrapping (CPD-003 §8), never the signing itself.
+      </div>
+      <pre><span class="c3">// server-side (Node.js) — mints, signs, then wraps as a Form 3 URI</span>
+<span class="c2">const</span> value = mintEphemeralToken();               <span class="c3">// your own session/reference logic</span>
+<span class="c2">const</span> signature = signWithIssuerKey(value);        <span class="c3">// e.g. Ed25519, per CPD-003 §12.3</span>
+
+<span class="c2">const</span> res = <span class="c2">await</span> fetch(<span class="c1">`${codecBaseUrl}/v1/payments/uri/token`</span>, {
+  method: <span class="c1">"POST"</span>,
+  headers: { <span class="c1">"Content-Type"</span>: <span class="c1">"application/json"</span> },
+  body: JSON.stringify({ value, signatureAlg: <span class="c1">"ed25519"</span>, signature }),
+});
+<span class="c2">const</span> { uri } = <span class="c2">await</span> res.json(); <span class="c3">// fpsf-pay:token?value=...&sig=ed25519:...</span></pre>
+    </div>
+
+    <!-- ============================= FLUTTER / DART ============================= -->
+    <div class="fw-panel" id="fw-flutter">
+
+      <div class="callout info">
+        <b>No published Dart package exists yet.</b>
+        The TypeScript side has a real, installable <code>@fpsf/cpd</code> package. Flutter does not — yet. Every "local" snippet below is copy-pasteable reference code, not a dependency you install, which is exactly the "copy-pasted" path this guide is meant to cover honestly rather than pretend a package exists.
+      </div>
+
+      <h3>1. Receiving and parsing a link — Forms 1 &amp; 2</h3>
+
+      <div class="path-tabs">
+        <div class="path-tab active" data-path="fl-decode-hosted">Hosted codec</div>
+        <div class="path-tab" data-path="fl-decode-local">Local parser (copy-paste)</div>
+      </div>
+
+      <div class="path-panel active" id="fl-decode-hosted">
+        <pre><span class="c3">// pubspec.yaml: dependencies: http: ^1.2.0
+// cpd_codec_client.dart</span>
+<span class="c2">import</span> <span class="c1">'dart:convert'</span>;
+<span class="c2">import</span> <span class="c1">'package:http/http.dart'</span> <span class="c2">as</span> http;
+
+<span class="c2">class</span> CpdCodecClient {
+  <span class="c2">final</span> String baseUrl;
+  CpdCodecClient(<span class="c2">this</span>.baseUrl);
+
+  <span class="c2">Future</span>&lt;Map&lt;String, dynamic&gt;&gt; decodeUri(String uri) <span class="c2">async</span> {
+    <span class="c2">final</span> res = <span class="c2">await</span> http.post(
+      Uri.parse(<span class="c1">'$baseUrl/v1/payments/uri/decode'</span>),
+      headers: {<span class="c1">'Content-Type'</span>: <span class="c1">'application/json'</span>},
+      body: jsonEncode({<span class="c1">'uri'</span>: uri}),
+    );
+    <span class="c2">final</span> body = jsonDecode(res.body) <span class="c2">as</span> Map&lt;String, dynamic&gt;;
+    <span class="c2">if</span> (res.statusCode != 200) {
+      <span class="c2">throw</span> Exception(body[<span class="c1">'error'</span>]?[<span class="c1">'message'</span>] ?? <span class="c1">'decode failed'</span>);
+    }
+    <span class="c2">return</span> body; <span class="c3">// { form: "envelope-or-stringified", payment: {...} }
+                // or  { form: "token", value, signatureAlg, signature, resolved: false }</span>
+  }
+}</pre>
+        <pre><span class="c3">// payment_link_preview.dart — display-and-confirm, per CPD-003 §12.1</span>
+<span class="c2">class</span> PaymentLinkPreview <span class="c2">extends</span> StatefulWidget {
+  <span class="c2">final</span> String uri;
+  <span class="c2">final</span> CpdCodecClient codec;
+  <span class="c2">const</span> PaymentLinkPreview({<span class="c2">super</span>.key, <span class="c2">required this</span>.uri, <span class="c2">required this</span>.codec});
+  @override
+  State&lt;PaymentLinkPreview&gt; createState() =&gt; _PaymentLinkPreviewState();
+}
+
+<span class="c2">class</span> _PaymentLinkPreviewState <span class="c2">extends</span> State&lt;PaymentLinkPreview&gt; {
+  <span class="c2">late final</span> Future&lt;Map&lt;String, dynamic&gt;&gt; _future = widget.codec.decodeUri(widget.uri);
+
+  @override
+  Widget build(BuildContext context) {
+    <span class="c2">return</span> FutureBuilder&lt;Map&lt;String, dynamic&gt;&gt;(
+      future: _future,
+      builder: (context, snapshot) {
+        <span class="c2">if</span> (!snapshot.hasData &amp;&amp; !snapshot.hasError) {
+          <span class="c2">return</span> <span class="c2">const</span> Text(<span class="c1">'Reading payment link…'</span>);
+        }
+        <span class="c2">if</span> (snapshot.hasError) {
+          <span class="c2">return</span> Text(<span class="c1">"Couldn't read this link: ${snapshot.error}"</span>);
+        }
+        <span class="c2">final</span> body = snapshot.data!;
+        <span class="c2">if</span> (body[<span class="c1">'form'</span>] == <span class="c1">'token'</span>) {
+          <span class="c2">return</span> ResolveTokenLink(
+            value: body[<span class="c1">'value'</span>], signatureAlg: body[<span class="c1">'signatureAlg'</span>],
+            signature: body[<span class="c1">'signature'</span>], codec: widget.codec,
+          );
+        }
+        <span class="c2">final</span> p = body[<span class="c1">'payment'</span>] <span class="c2">as</span> Map&lt;String, dynamic&gt;;
+        <span class="c2">final</span> value = p[<span class="c1">'value'</span>] <span class="c2">as</span> Map&lt;String, dynamic&gt;;
+        <span class="c2">final</span> payee = p[<span class="c1">'payee'</span>] <span class="c2">as</span> Map&lt;String, dynamic&gt;;
+        <span class="c2">return</span> Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(<span class="c1">'Pay ${value['</span>amount<span class="c1">']} ${value['</span>asset<span class="c1">']} to ${payee['</span>id<span class="c1">']}'</span>),
+            <span class="c3">// never act automatically — require an explicit tap before authorizing</span>
+            ElevatedButton(onPressed: () =&gt; onConfirm(p), child: <span class="c2">const</span> Text(<span class="c1">'Confirm and continue'</span>)),
+          ],
+        );
+      },
+    );
+  }
+}</pre>
+      </div>
+
+      <div class="path-panel" id="fl-decode-local">
+        <p class="body muted">A minimal, spec-conformant parser — closed-vocabulary rejection and all — with no dependency beyond <code>dart:core</code>. It deliberately does not use <code>Uri.splitQueryString</code>, which follows the HTML form convention and treats <code>+</code> as a literal space; CPD-003 §7.3 forbids exactly that.</p>
+        <pre><span class="c3">// fpsf_pay_uri.dart — copy this file into your project</span>
+<span class="c2">class</span> ParsedFpsfPayUri {
+  <span class="c2">final</span> String form; <span class="c3">// 'envelope' | 'stringified' | 'token'</span>
+  <span class="c2">final</span> String? codec, payload, json, value, signatureAlg, signature;
+  ParsedFpsfPayUri._(<span class="c2">this</span>.form, {<span class="c2">this</span>.codec, <span class="c2">this</span>.payload, <span class="c2">this</span>.json,
+      <span class="c2">this</span>.value, <span class="c2">this</span>.signatureAlg, <span class="c2">this</span>.signature});
+}
+
+<span class="c2">class</span> CpdUriException <span class="c2">implements</span> Exception {
+  <span class="c2">final</span> String message;
+  CpdUriException(<span class="c2">this</span>.message);
+  @override
+  String toString() =&gt; <span class="c1">'CpdUriException: $message'</span>;
+}
+
+<span class="c2">final</span> _codecTokenRe = RegExp(<span class="c1">r'^[A-Za-z0-9-]{1,32}$'</span>);
+<span class="c2">final</span> _base64UrlRe = RegExp(<span class="c1">r'^[A-Za-z0-9_-]+$'</span>);
+<span class="c2">final</span> _algIdRe = RegExp(<span class="c1">r'^[A-Za-z0-9-]{1,16}$'</span>);
+
+Map&lt;String, String&gt; _splitQueryStrict(String query) {
+  <span class="c2">if</span> (query.isEmpty) <span class="c2">throw</span> CpdUriException(<span class="c1">'empty query string'</span>);
+  <span class="c2">final</span> out = &lt;String, String&gt;{};
+  <span class="c2">for</span> (<span class="c2">final</span> segment <span class="c2">in</span> query.split(<span class="c1">'&'</span>)) {
+    <span class="c2">final</span> eq = segment.indexOf(<span class="c1">'='</span>);
+    <span class="c2">if</span> (eq == -1) <span class="c2">throw</span> CpdUriException(<span class="c1">'malformed query segment (no "="): "$segment"'</span>);
+    <span class="c2">final</span> key = segment.substring(0, eq);
+    <span class="c2">if</span> (out.containsKey(key)) <span class="c2">throw</span> CpdUriException(<span class="c1">'duplicate query parameter "$key"'</span>);
+    out[key] = segment.substring(eq + 1);
+  }
+  <span class="c2">return</span> out;
+}
+
+<span class="c2">void</span> _assertExactKeys(Set&lt;String&gt; keys, List&lt;String&gt; required, String form) {
+  <span class="c2">final</span> req = required.toSet();
+  <span class="c2">for</span> (<span class="c2">final</span> k <span class="c2">in</span> keys) {
+    <span class="c2">if</span> (!req.contains(k)) <span class="c2">throw</span> CpdUriException(<span class="c1">'unrecognized query parameter "$k" for Form $form'</span>);
+  }
+  <span class="c2">for</span> (<span class="c2">final</span> r <span class="c2">in</span> required) {
+    <span class="c2">if</span> (!keys.contains(r)) <span class="c2">throw</span> CpdUriException(<span class="c1">'missing required query parameter "$r" for Form $form'</span>);
+  }
+}
+
+<span class="c3">// Strict RFC 3986 percent-decoding — Uri.decodeComponent never treats
+// "+" as space, unlike Uri.splitQueryString. That distinction is the
+// whole reason this function exists instead of using the built-in one.</span>
+String _percentDecodeStrict(String value) {
+  <span class="c2">try</span> {
+    <span class="c2">return</span> Uri.decodeComponent(value);
+  } <span class="c2">catch</span> (_) {
+    <span class="c2">throw</span> CpdUriException(<span class="c1">'malformed percent-encoding'</span>);
+  }
+}
+
+ParsedFpsfPayUri parseFpsfPayUri(String uri) {
+  <span class="c2">const</span> prefix = <span class="c1">'fpsf-pay:'</span>;
+  <span class="c2">if</span> (!uri.startsWith(prefix)) <span class="c2">throw</span> CpdUriException(<span class="c1">'URI must start with "$prefix"'</span>);
+  <span class="c2">final</span> body = uri.substring(prefix.length);
+  <span class="c2">final</span> qIndex = body.indexOf(<span class="c1">'?'</span>);
+
+  <span class="c2">if</span> (qIndex == -1) {
+    <span class="c2">final</span> dot = body.indexOf(<span class="c1">'.'</span>);
+    <span class="c2">if</span> (dot == -1) <span class="c2">throw</span> CpdUriException(<span class="c1">'Form 1 URI must contain "."'</span>);
+    <span class="c2">final</span> codec = body.substring(0, dot);
+    <span class="c2">final</span> payload = body.substring(dot + 1);
+    <span class="c2">if</span> (!_codecTokenRe.hasMatch(codec) || codec == <span class="c1">'token'</span>) {
+      <span class="c2">throw</span> CpdUriException(<span class="c1">'invalid codec token "$codec"'</span>);
+    }
+    <span class="c2">if</span> (!_base64UrlRe.hasMatch(payload)) <span class="c2">throw</span> CpdUriException(<span class="c1">'Form 1 payload must be base64url'</span>);
+    <span class="c2">return</span> ParsedFpsfPayUri._(<span class="c1">'envelope'</span>, codec: codec, payload: payload);
+  }
+
+  <span class="c2">final</span> head = body.substring(0, qIndex);
+  <span class="c2">final</span> query = body.substring(qIndex + 1);
+
+  <span class="c2">if</span> (head == <span class="c1">'token'</span>) {
+    <span class="c2">final</span> params = _splitQueryStrict(query);
+    _assertExactKeys(params.keys.toSet(), [<span class="c1">'value'</span>, <span class="c1">'sig'</span>], <span class="c1">'3'</span>);
+    <span class="c2">final</span> value = params[<span class="c1">'value'</span>]!;
+    <span class="c2">final</span> sig = params[<span class="c1">'sig'</span>]!;
+    <span class="c2">if</span> (!_base64UrlRe.hasMatch(value)) <span class="c2">throw</span> CpdUriException(<span class="c1">'Form 3 "value" must be base64url-safe'</span>);
+    <span class="c2">final</span> colon = sig.indexOf(<span class="c1">':'</span>);
+    <span class="c2">if</span> (colon == -1) <span class="c2">throw</span> CpdUriException(<span class="c1">'Form 3 "sig" must be "&lt;alg-id&gt;:&lt;signature&gt;"'</span>);
+    <span class="c2">final</span> alg = sig.substring(0, colon);
+    <span class="c2">final</span> sigBody = sig.substring(colon + 1);
+    <span class="c2">if</span> (!_algIdRe.hasMatch(alg) || !_base64UrlRe.hasMatch(sigBody)) {
+      <span class="c2">throw</span> CpdUriException(<span class="c1">'invalid Form 3 signature'</span>);
+    }
+    <span class="c2">return</span> ParsedFpsfPayUri._(<span class="c1">'token'</span>, value: value, signatureAlg: alg, signature: sigBody);
+  }
+
+  <span class="c2">if</span> (head.contains(<span class="c1">'.'</span>) || !_codecTokenRe.hasMatch(head)) {
+    <span class="c2">throw</span> CpdUriException(<span class="c1">'invalid codec token "$head"'</span>);
+  }
+  <span class="c2">final</span> params = _splitQueryStrict(query);
+  _assertExactKeys(params.keys.toSet(), [<span class="c1">'envelope'</span>], <span class="c1">'2'</span>);
+  <span class="c2">final</span> json = _percentDecodeStrict(params[<span class="c1">'envelope'</span>]!);
+  <span class="c2">return</span> ParsedFpsfPayUri._(<span class="c1">'stringified'</span>, codec: head, json: json);
+}</pre>
+        <p class="body muted">This gets you a validated, form-identified <code>ParsedFpsfPayUri</code>. For Forms 1–2, you'd still base64url- or JSON-decode <code>payload</code>/<code>json</code> yourself to get the underlying Payment fields — reasonable for a trusted, controlled environment; if you want a battle-tested canonicalization/validation layer too, that's exactly what the hosted codec path already gives you.</p>
+      </div>
+
+      <h3>2. Resolving a Form 3 reference</h3>
+      <span class="form-badge f3">Form 3 — Ephemeral Token + Signature</span>
+      <pre><span class="c3">// resolve_token_link.dart</span>
+<span class="c2">class</span> ResolveTokenLink <span class="c2">extends</span> StatefulWidget {
+  <span class="c2">final</span> String value, signatureAlg, signature;
+  <span class="c2">final</span> CpdCodecClient codec;
+  <span class="c2">const</span> ResolveTokenLink({<span class="c2">super</span>.key, <span class="c2">required this</span>.value,
+      <span class="c2">required this</span>.signatureAlg, <span class="c2">required this</span>.signature, <span class="c2">required this</span>.codec});
+  @override
+  State&lt;ResolveTokenLink&gt; createState() =&gt; _ResolveTokenLinkState();
+}
+
+<span class="c2">class</span> _ResolveTokenLinkState <span class="c2">extends</span> State&lt;ResolveTokenLink&gt; {
+  <span class="c2">late final</span> Future&lt;String&gt; _resolvedUri = _resolve();
+
+  <span class="c2">Future</span>&lt;String&gt; _resolve() <span class="c2">async</span> {
+    <span class="c3">// Your own backend — CPD-003 §12.4 leaves resolution out of scope,
+    // deliberately. Re-using FPSF-SS-001's Ephemeral Token exchange
+    // (checkout-public-widget) is one concrete, already-existing precedent.</span>
+    <span class="c2">final</span> res = <span class="c2">await</span> http.get(
+      Uri.parse(<span class="c1">'https://your-app.example/api/resolve-payment-link?token=${widget.value}'</span>));
+    <span class="c2">final</span> body = jsonDecode(res.body) <span class="c2">as</span> Map&lt;String, dynamic&gt;;
+    <span class="c2">return</span> body[<span class="c1">'uri'</span>] <span class="c2">as</span> String; <span class="c3">// always Form 1 or 2, never another Form 3</span>
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    <span class="c2">return</span> FutureBuilder&lt;String&gt;(
+      future: _resolvedUri,
+      builder: (context, snapshot) {
+        <span class="c2">if</span> (!snapshot.hasData) <span class="c2">return</span> <span class="c2">const</span> Text(<span class="c1">'Resolving payment reference…'</span>);
+        <span class="c2">return</span> PaymentLinkPreview(uri: snapshot.data!, codec: widget.codec);
+      },
+    );
+  }
+}</pre>
+
+      <h3>3. Constructing a link — payee-side (e.g. a point-of-sale app), Forms 1 &amp; 2</h3>
+      <pre><span class="c2">Future</span>&lt;String&gt; buildPaymentLink(Map&lt;String, dynamic&gt; payment, CpdCodecClient codec) <span class="c2">async</span> {
+  <span class="c2">final</span> res = <span class="c2">await</span> http.post(
+    Uri.parse(<span class="c1">'${codec.baseUrl}/v1/payments/encode'</span>),
+    headers: {<span class="c1">'Content-Type'</span>: <span class="c1">'application/json'</span>},
+    body: jsonEncode(payment),
+  );
+  <span class="c2">final</span> body = jsonDecode(res.body) <span class="c2">as</span> Map&lt;String, dynamic&gt;;
+  <span class="c2">return</span> body[<span class="c1">'uri'</span>] <span class="c2">as</span> String; <span class="c3">// Form 1 — feed to e.g. the qr_flutter package to render</span>
+}</pre>
+      <p class="body muted">There is no local/offline path shown for construction — building the canonical, correctly-ordered JSON envelope by hand is exactly the kind of drift risk this guide keeps steering away from. Use the hosted codec for this side.</p>
+
+      <h3>4. Minting a Form 3 token — backend only, not client code</h3>
+      <span class="form-badge f3">Form 3 — Ephemeral Token + Signature</span>
+      <div class="callout warn">
+        <b>Never in the Flutter app.</b>
+        Exactly as on the TypeScript side — a mobile app is not where a signing key belongs. This step happens on your backend, in whatever language it's written in, then calls the same <code>/v1/payments/uri/token</code> endpoint to wrap the result.
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-label">Choosing a path</div>
+    <h2>A quick comparison, so you're not guessing.</h2>
+    <table class="cmp">
+      <tr><th></th><th>Hosted / self-hosted codec</th><th>Installed or copy-pasted local code</th></tr>
+      <tr><td>Correctness risk</td><td>Lowest — one implementation, tested against the spec's own test suite</td><td>On you — the samples here are correct today, but you own keeping them that way</td></tr>
+      <tr><td>Works offline</td><td>No</td><td>Yes</td></tr>
+      <tr><td>First-request latency</td><td>One network round trip</td><td>None</td></tr>
+      <tr><td>Available today for</td><td>TypeScript and Flutter, identically (it's just HTTP)</td><td>TypeScript (real package) · Flutter (copy-paste only, §"1")</td></tr>
+      <tr><td>Recommended for</td><td>Most apps, most of the time</td><td>Offline-first apps, or once you're confident enough to own the parser</td></tr>
+    </table>
+  </div>
+</section>
+
+<section id="checklist">
+  <div class="wrap">
+    <div class="sec-label">Before you ship</div>
+    <h2>Client integration checklist.</h2>
+    <div class="checklist">
+      <div class="check-item"><div class="box"></div><div><b>You never act on a decoded payload without an explicit user confirmation</b> — CPD-003 §12.1, §12.5, and CPD-002 §11.1 all require this, on every platform.</div></div>
+      <div class="check-item"><div class="box"></div><div><b>Form 3 is handled as a distinct branch</b>, not an error — an <code>UnresolvedTokenUriError</code> or a <code>{ "form": "token" }</code> response is expected, ordinary control flow, not a failure state.</div></div>
+      <div class="check-item"><div class="box"></div><div><b>You never use your platform's default form-encoded query parser</b> (<code>URLSearchParams</code>, <code>Uri.splitQueryString</code>) for Form 2's <code>envelope</code> parameter — both treat <code>+</code> as space, which CPD-003 §7.3 forbids.</div></div>
+      <div class="check-item"><div class="box"></div><div><b>Unknown query parameters are rejected</b>, not ignored, if you're parsing locally — CPD-003 §10 is a hard requirement, not a suggestion.</div></div>
+      <div class="check-item"><div class="box"></div><div><b>No signing key ever ships inside a client bundle or mobile binary</b> — Form 3 minting stays server-side, always.</div></div>
+      <div class="check-item"><div class="box"></div><div><b>Your resolution endpoint (Form 3) is documented as your own</b>, not confused with the codec's — the codec never resolves a token, by design.</div></div>
+      <div class="check-item"><div class="box"></div><div><b>You've registered the <code>fpsf-pay:</code> scheme</b> with the OS on both platforms (iOS <code>Info.plist</code>, Android <code>intent-filter</code>) if you want deep links to open your app directly.</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="cta">
+    <h2>Run the codec, then wire up either client.</h2>
+    <p><code>npm install &amp;&amp; npm run dev</code> from the <code>@fpsf/cpd</code> package gets a codec service running on <code>localhost:8787</code> in under a minute.</p>
+    <div class="hero-actions" style="justify-content:center;">
+      <a href="./index.html" class="btn btn-primary">CPD-001 quickstart →</a>
+      <a href="../spec/CPD-003.md" class="btn btn-outline">Read CPD-003 →</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot-grid">
+    <div>Client integration guide for FPSF-CPD-003 · @fpsf/cpd reference implementation</div>
+    <div>Fabric Payment Standards Foundation · Apache License 2.0</div>
+  </div>
+</footer>
+
+<script>
+document.querySelectorAll('.fw-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.fw-tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.fw-panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('fw-' + t.dataset.fw).classList.add('active');
+  });
+});
+document.querySelectorAll('.path-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    const tabsRow = t.parentElement;
+    const panelIds = Array.from(tabsRow.querySelectorAll('.path-tab')).map(x => x.dataset.path);
+    tabsRow.querySelectorAll('.path-tab').forEach(x => x.classList.remove('active'));
+    panelIds.forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('active'); });
+    t.classList.add('active');
+    document.getElementById(t.dataset.path).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>

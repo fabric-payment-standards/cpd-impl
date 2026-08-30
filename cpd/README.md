@@ -270,11 +270,63 @@ representation to route on top of.
 
 ---
 
+## The `fpsf-pay:` URI scheme (FPSF-CPD-003)
+
+Alongside the JSON codec above, this package implements [FPSF-CPD-003](./spec/CPD-003.md), a
+companion specification defining a minimal, codec-agnostic URI scheme for carrying — or
+pointing to — a payment payload across a link, deep link, or QR code. It defines **three**
+distinct, closed representation forms, not one:
+
+| Form | Looks like | Compactness | QR-appropriate |
+|---|---|---|---|
+| **1 — Opaque Envelope** (preferred) | `fpsf-pay:cpd-json-v1.eyJhdXRo...` | Best | Only if the Payment is known to be small |
+| **2 — Stringified Envelope** | `fpsf-pay:cpd-json-v1?envelope=%7B%22id%22...` | Worst — JSON's delimiters expand under percent-encoding | No |
+| **3 — Ephemeral Token + Signature** | `fpsf-pay:token?value=a1b2c3&sig=ed25519:MEUC...` | Best, and independent of Payment size | Yes, by design |
+
+Form 3 does not carry the payload at all — it carries a short, signed *reference* to one,
+resolved out of band. This exists because a CPD-001 `Payment` has several genuinely unbounded
+fields (`intent.conditions`, opaque `authorization.data`, and so on), so — unlike FPSF-SS-005's
+fixed-width CPRE payloads, which are engineered to fit a QR code by design — there's no
+guarantee an arbitrary Payment's full envelope does too. See CPD-003 §13 for the full
+reasoning, and `examples/uri-payment.ts` for real size numbers (a representative Payment: 397
+chars for Form 1, 518 for Form 2, 81 — constant — for Form 3).
+
+```ts
+import { encodeEnvelopeURI, encodeStringifiedURI, encodeTokenURI, decodeURI } from "@fpsf/cpd";
+
+encodeEnvelopeURI(payment);      // Form 1 — preferred
+encodeStringifiedURI(payment);   // Form 2 — human-legible, larger
+encodeTokenURI(value, "ed25519", signature); // Form 3 — a reference, not a payload
+
+decodeURI(uri); // resolves Forms 1–2 to a Payment; throws UnresolvedTokenUriError for Form 3
+```
+
+Run `npx tsx examples/uri-payment.ts` to see all three side by side, or `POST
+/v1/payments/uri/decode`, `/v1/payments/uri/token`, and `/v1/payments/uri/parse` over REST.
+
+**Building a client?** [`public/uri-scheme-guide.html`](./public/uri-scheme-guide.html) has full
+TypeScript (React) and Flutter (Dart) integration code for all three forms — receiving,
+resolving Form 3, and constructing — covering both the hosted-codec and local/copy-pasted paths.
+
+**Closed parameter vocabulary.** Every query parameter this scheme accepts is enumerated in
+CPD-003 §10 — a decoder MUST reject any URI carrying an unrecognized parameter, a missing
+required one, or a duplicate, rather than tolerantly ignoring it. This implementation enforces
+that rejection at the parser level (`src/cpd/uri.ts`), not as an afterthought.
+
+**Relationship to RFC 8905 (`payto:`).** [`payto:`](https://datatracker.ietf.org/doc/html/rfc8905)
+is an IETF-standardized scheme for identifying a payment *target* (an IBAN, a card reference) —
+closer to `mailto:` for a payment address. `fpsf-pay:` operates one layer up: it carries a
+structured payment (or payment request) object, or a verifiable reference to one. The two are
+complementary, not competing — a CPD-001 Payment's `payee.id` or `context` MAY itself carry a
+`payto:` value where that's the natural way to express a target for the settlement rail in use.
+See CPD-003 §3.4 for the full comparison.
+
+---
+
 ## Development
 
 ```bash
 npm install
-npm run typecheck   # type-checks src + test + examples together
 npm run build        # builds src/ only, to dist/
 npm test              # runs the full test suite (vitest)
 npm run dev            # runs the REST server directly from source (tsx)
@@ -285,20 +337,24 @@ npm start                # runs the compiled REST server from dist/
 
 ```
 cpd/
-├── spec/CPD-001.md          working copy of the specification
+├── spec/
+│   ├── CPD-001.md            working copy of the Payment definition
+│   ├── CPD-002.md            working copy of the Canonical Payment Request
+│   └── CPD-003.md            working copy of the fpsf-pay: URI scheme
 ├── src/
 │   ├── cpd/                 domain model — usable standalone, no HTTP dependency
 │   │   ├── types.ts
 │   │   ├── Payment.ts
 │   │   ├── validation.ts
 │   │   ├── codec.ts
+│   │   ├── uri.ts           FPSF-CPD-003 — all three representation forms
 │   │   └── index.ts
 │   ├── http/                thin REST layer on top of src/cpd
 │   │   ├── server.ts
 │   │   ├── routes.ts
 │   │   └── errors.ts
 │   └── index.ts
-├── test/                    vitest suite (domain, validation, codec, HTTP)
+├── test/                    vitest suite (domain, validation, codec, uri, HTTP)
 ├── examples/                minimal runnable TypeScript + curl examples
 └── public/index.html        developer landing page
 ```
@@ -319,10 +375,13 @@ There is no claim of conformance beyond what these tests actually check. Read th
 ## Specification reference
 
 - [FPSF-CPD-001 — Canonical Payment Definition](./spec/CPD-001.md) (working copy)
-- FPSF-CPD-002 — Canonical Payment Request (companion specification; defines the
-  payer-agnostic request from which a CPD-001 Payment may be derived — not implemented in
-  this package)
+- [FPSF-CPD-002 — Canonical Payment Request](./spec/CPD-002.md) (working copy; defines the
+  payer-agnostic `CanonicalPaymentRequest` and the `derivePayment` procedure — not yet
+  implemented in this package, see CPD-002 §13)
+- [FPSF-CPD-003 — Payment URI Scheme (`fpsf-pay:`)](./spec/CPD-003.md) (working copy)
 - FPSF-SS-005 — Cryptocurrency Payment Request Encoding (a specialized, sibling codec)
+- [RFC 8905 — The 'payto' URI Scheme for Payments](https://datatracker.ietf.org/doc/html/rfc8905)
+  (a related, complementary IETF scheme — see CPD-003 §3.4)
 
 ---
 
