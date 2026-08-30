@@ -4,7 +4,7 @@
 
 **One payment interface. Any payment rail.**
 
-`@fpsf/cpd` is a reference implementation of [FPSF-CPD-001](./spec/CPD-001.md), an open,
+`@fpsf/cpd` is a reference implementation of [FPSF-CPD-001](https://fabricpaymentstandards.org/specs/canonical-payment/cpd-001/SPEC/), an open,
 minimal, rail-agnostic model of a **Payment**. It gives you a canonical `Payment` object,
 validation against the specification's normative constraints, a small deterministic codec
 for transporting a Payment as an opaque token, and a thin REST server exposing all of it.
@@ -318,7 +318,7 @@ There is no claim of conformance beyond what these tests actually check. Read th
 
 ## Specification reference
 
-- [FPSF-CPD-001 — Canonical Payment Definition](./spec/CPD-001.md) (working copy)
+- [FPSF-CPD-001 — Canonical Payment Definition](https://fabricpaymentstandards.org/specs/canonical-payment/cpd-001/SPEC/) (working copy)
 - FPSF-CPD-002 — Canonical Payment Request (companion specification; defines the
   payer-agnostic request from which a CPD-001 Payment may be derived — not implemented in
   this package)
